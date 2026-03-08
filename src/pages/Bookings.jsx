@@ -27,7 +27,7 @@ export default function Bookings() {
         {
           ...data,
           id: `${Date.now()}-${Math.floor(Math.random() * 10000)}`, // Safe unique ID
-          status: "pending",
+          status: data.status || "pending",
           createdAt: new Date(),
         },
       ]);
@@ -72,12 +72,12 @@ export default function Bookings() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Bookings</h1>
+            <h1 className="text-3xl font-bold text-gray-900">BizHub Bookings</h1>
             <p className="text-gray-600 mt-1">
               Manage your appointments and reservations
             </p>
@@ -88,7 +88,7 @@ export default function Bookings() {
               setEditingBooking(null);
               setShowForm(!showForm);
             }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg"
           >
             <Plus className="h-5 w-5" />
             New Booking

@@ -59,7 +59,7 @@ export default function BookingStats({ bookings }) {
                   <p className="text-sm font-medium text-gray-600">{stat.label}</p>
                   <p className="text-3xl font-bold mt-2">{stat.value}</p>
                 </div>
-                <div className="bg-white p-3 rounded-lg">
+                <div className={`${stat.bgColor} p-3 rounded-lg`}>
                   <Icon className={`h-6 w-6 ${stat.color.replace('bg-', 'text-')}`} />
                 </div>
               </div>

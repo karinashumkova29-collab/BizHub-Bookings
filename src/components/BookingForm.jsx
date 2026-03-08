@@ -156,7 +156,7 @@ export default function BookingForm({ booking, onSubmit, onCancel }) {
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" className="bg-slate-900 hover:bg-slate-800">
                 <Save className="h-4 w-4 mr-2" />
                 {booking ? "Update" : "Create"} Booking
               </Button>

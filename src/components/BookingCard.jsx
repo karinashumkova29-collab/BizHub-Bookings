@@ -12,7 +12,6 @@ import { Calendar, Clock, Mail, Phone, MoreVertical, Briefcase } from "lucide-re
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 
-// Status styles configuration
 const STATUS_STYLES = {
   confirmed: { bg: "bg-green-100", text: "text-green-800", border: "border-green-200", label: "Confirmed" },
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellow-200", label: "Pending" },
@@ -28,13 +27,13 @@ export default function BookingCard({ booking, onStatusChange, onEdit, onDelete 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
     >
-      <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
+      <Card className={`hover:shadow-lg transition-all duration-300 border-l-4 ${status.border}`}>
         <CardContent className="p-6">
           {/* Header */}
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-start gap-3">
               {/* Avatar */}
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+              <div className={`h-12 w-12 rounded-full ${status.bg} ${status.text} flex items-center justify-center font-semibold text-lg`}>
                 {booking.name.charAt(0).toUpperCase()}
               </div>
 
@@ -67,28 +66,28 @@ export default function BookingCard({ booking, onStatusChange, onEdit, onDelete 
           {/* Details */}
           <div className="space-y-3 text-gray-700">
             <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-blue-500" />
+              <Briefcase className="h-4 w-4 text-slate-600" />
               <span className="font-medium">{booking.service}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-blue-500" />
+              <Calendar className="h-4 w-4 text-slate-600" />
               <span>{format(new Date(booking.booking_date), "MMMM d, yyyy")}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-500" />
+              <Clock className="h-4 w-4 text-slate-600" />
               <span>{format(new Date(booking.booking_date), "h:mm a")}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-blue-500" />
+              <Mail className="h-4 w-4 text-slate-600" />
               <span className="text-sm">{booking.email}</span>
             </div>
 
             {booking.phone && (
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-500" />
+                <Phone className="h-4 w-4 text-slate-600" />
                 <span className="text-sm">{booking.phone}</span>
               </div>
             )}
