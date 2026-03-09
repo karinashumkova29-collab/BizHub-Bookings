@@ -164,7 +164,7 @@ export default function Bookings() {
 
         {/* Bookings Grid */}
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading bookings...</div>
+          <div className="text-center py-12 text-gray-500">Loading BizHub Bookings...</div>
         ) : filteredBookings.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed">
             <Calendar className="h-12 w-12 mx-auto text-gray-400" />
