@@ -1,47 +1,87 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Calendar } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+import { createClient } from "@supabase/supabase-js";
 
 import BookingCard from "../components/BookingCard";
 import BookingFilters from "../components/BookingFilters";
 import BookingForm from "../components/BookingForm";
 import BookingStats from "../components/BookingStats";
 
+const supabase = createClient(
+  "https://kbssnjhvznsluvjypogi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtic3Nuamh2em5zbHV2anlwb2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMzE3MTksImV4cCI6MjA4ODYwNzcxOX0.C__8jlgj3jR5bqU1hFpIpajdi71Eiw_O5C6laENu0xY"
+);
+
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [filters, setFilters] = useState({ search: "", status: "all" });
+  const [loading, setLoading] = useState(true);
+
+  // FETCH
+  const fetchBookings = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) console.error("Error fetching:", error);
+    else setBookings(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
   // CREATE / UPDATE
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     if (editingBooking) {
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === editingBooking.id ? { ...data, id: b.id } : b
-        )
-      );
+      const { error } = await supabase
+        .from("bookings")
+        .update({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          service: data.service,
+          booking_date: data.booking_date,
+          status: data.status,
+          notes: data.notes,
+        })
+        .eq("id", editingBooking.id);
+
+      if (error) console.error("Error updating:", error);
     } else {
-      setBookings((prev) => [
-        ...prev,
-        {
-          ...data,
-          id: `${Date.now()}-${Math.floor(Math.random() * 10000)}`, // Safe unique ID
-          status: data.status || "pending",
-          createdAt: new Date(),
-        },
-      ]);
+      const { error } = await supabase.from("bookings").insert([{
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        service: data.service,
+        booking_date: data.booking_date,
+        status: data.status || "pending",
+        notes: data.notes,
+      }]);
+
+      if (error) console.error("Error creating:", error);
     }
 
+    await fetchBookings();
     setShowForm(false);
     setEditingBooking(null);
   };
 
   // STATUS CHANGE
-  const handleStatusChange = (booking, newStatus) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === booking.id ? { ...b, status: newStatus } : b))
-    );
+  const handleStatusChange = async (booking, newStatus) => {
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: newStatus })
+      .eq("id", booking.id);
+
+    if (error) console.error("Error updating status:", error);
+    else await fetchBookings();
   };
 
   // EDIT
@@ -51,9 +91,15 @@ export default function Bookings() {
   };
 
   // DELETE
-  const handleDelete = (booking) => {
+  const handleDelete = async (booking) => {
     if (window.confirm("Delete this booking?")) {
-      setBookings((prev) => prev.filter((b) => b.id !== booking.id));
+      const { error } = await supabase
+        .from("bookings")
+        .delete()
+        .eq("id", booking.id);
+
+      if (error) console.error("Error deleting:", error);
+      else await fetchBookings();
     }
   };
 
@@ -102,7 +148,7 @@ export default function Bookings() {
         <AnimatePresence>
           {showForm && (
             <BookingForm
-              key={editingBooking?.id || "new"} // Ensures form resets for new booking
+              key={editingBooking?.id || "new"}
               booking={editingBooking}
               onSubmit={handleSubmit}
               onCancel={() => {
@@ -117,7 +163,9 @@ export default function Bookings() {
         <BookingFilters filters={filters} onFilterChange={setFilters} />
 
         {/* Bookings Grid */}
-        {filteredBookings.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">Loading bookings...</div>
+        ) : filteredBookings.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed">
             <Calendar className="h-12 w-12 mx-auto text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
