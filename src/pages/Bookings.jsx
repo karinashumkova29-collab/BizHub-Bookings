@@ -1,31 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Calendar } from "lucide-react";
+import { Plus, Calendar, LogOut } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 
 import BookingCard from "../components/BookingCard";
 import BookingFilters from "../components/BookingFilters";
 import BookingForm from "../components/BookingForm";
 import BookingStats from "../components/BookingStats";
 
-const supabase = createClient(
-  "https://kbssnjhvznsluvjypogi.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtic3Nuamh2em5zbHV2anlwb2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMzE3MTksImV4cCI6MjA4ODYwNzcxOX0.C__8jlgj3jR5bqU1hFpIpajdi71Eiw_O5C6laENu0xY"
-);
-
-export default function Bookings() {
+export default function Bookings({ user }) {
   const [bookings, setBookings] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [filters, setFilters] = useState({ search: "", status: "all" });
   const [loading, setLoading] = useState(true);
 
-  // FETCH
+  // FETCH — only this user's bookings
   const fetchBookings = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("bookings")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) console.error("Error fetching:", error);
@@ -35,7 +31,7 @@ export default function Bookings() {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [user.id]);
 
   // CREATE / UPDATE
   const handleSubmit = async (data) => {
@@ -51,7 +47,8 @@ export default function Bookings() {
           status: data.status,
           notes: data.notes,
         })
-        .eq("id", editingBooking.id);
+        .eq("id", editingBooking.id)
+        .eq("user_id", user.id);
 
       if (error) console.error("Error updating:", error);
     } else {
@@ -63,6 +60,7 @@ export default function Bookings() {
         booking_date: data.booking_date,
         status: data.status || "pending",
         notes: data.notes,
+        user_id: user.id,  // Save with user_id
       }]);
 
       if (error) console.error("Error creating:", error);
@@ -78,7 +76,8 @@ export default function Bookings() {
     const { error } = await supabase
       .from("bookings")
       .update({ status: newStatus })
-      .eq("id", booking.id);
+      .eq("id", booking.id)
+      .eq("user_id", user.id);
 
     if (error) console.error("Error updating status:", error);
     else await fetchBookings();
@@ -96,11 +95,17 @@ export default function Bookings() {
       const { error } = await supabase
         .from("bookings")
         .delete()
-        .eq("id", booking.id);
+        .eq("id", booking.id)
+        .eq("user_id", user.id);
 
       if (error) console.error("Error deleting:", error);
       else await fetchBookings();
     }
+  };
+
+  // SIGN OUT
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
   };
 
   // FILTERING
@@ -129,16 +134,25 @@ export default function Bookings() {
             </p>
           </div>
 
-          <button
-            onClick={() => {
-              setEditingBooking(null);
-              setShowForm(!showForm);
-            }}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg"
-          >
-            <Plus className="h-5 w-5" />
-            New Booking
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setEditingBooking(null);
+                setShowForm(!showForm);
+              }}
+              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg"
+            >
+              <Plus className="h-5 w-5" />
+              New Booking
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign out
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
